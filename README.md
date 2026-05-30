@@ -6,20 +6,27 @@ This repository contains the final project for the Machine Learning course (Even
 
 In the modern job market, raw job descriptions contain massive amounts of unstructured insights that are difficult to analyze at scale. This project tackles that challenge by building a Multi-Task NLP Pipeline. Instead of relying on simple keyword matching, we utilize state-of-the-art Deep Learning models to truly understand the context of job postings.
 
+## Dataset
+
+The data driving this project originates from the **[LinkedIn Job Postings Dataset (2023 - 2024)](https://www.kaggle.com/datasets/arshkon/linkedin-job-postings/data)** available on Kaggle. This comprehensive dataset contains thousands of real-world job listings, encompassing diverse industries, roles, and compensation structures. Due to size constraints, the raw dataset is not included in this repository, but the heavily processed and cleaned versions are stored in the `data/processed/` directory.
+
 ## Core Features
 
 1. **Task A: Skill Extractor (NER)**
    - Utilizes a fine-tuned JobBERT model (`jjzha/jobbert-base-cased`) on manually labeled datasets to perform Named Entity Recognition (NER).
-   - Automatically reads job descriptions and extracts required Hard Skills, Software Knowledge, and Certifications.
+   - Automatically reads job descriptions and extracts required **Hard Skills, Software Knowledge, and Certifications**.
+   - Generates pseudo-labels for over 10,000 unannotated job postings, enabling large-scale skill profiling.
 
 2. **Task B: Job Galaxy (Unsupervised Clustering)**
-   - Converts textual job descriptions into dense vectors using Sentence-BERT (`all-MiniLM-L6-v2`).
-   - Reduces dimensionality using UMAP and clusters the jobs using HDBSCAN to discover latent "Galaxies" of similar roles in the market.
+   - Converts textual job descriptions into dense embeddings using Sentence-BERT (`all-MiniLM-L6-v2`).
+   - Reduces high-dimensional embedding spaces (384D) down to manageable 50D and 2D projections using **UMAP**.
+   - Clusters the jobs using **HDBSCAN** to discover latent "Galaxies" of similar roles in the market, effectively mapping the entire job ecosystem visually.
 
 3. **Task C: Salary Intelligence Simulator**
-   - Combines NLP vectors with structured data (Industry, Experience, Seniority).
-   - Uses an XGBoost ensemble model to predict the fair market annual salary of a job posting.
-   - Provides an interactive "What-If" simulator to instantly see how tweaking variables affects predicted salaries.
+   - Combines NLP vectors (SBERT and TF-IDF) with structured, categorical data (Industry, Experience, Seniority).
+   - Utilizes advanced Target Encoding for high-cardinality categorical features.
+   - Uses an **XGBoost ensemble model** to predict the fair market annual salary of a job posting.
+   - Features an interactive **"What-If" simulator** in the dashboard to instantly see how tweaking variables (e.g., adding years of experience or shifting to a remote role) affects the predicted compensation.
 
 ## Development Team
 
