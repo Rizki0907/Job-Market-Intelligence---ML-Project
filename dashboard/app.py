@@ -48,7 +48,7 @@ st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
     "Navigation", 
-    ["Project Overview", "Skill Extractor", "Job Galaxy (Clustering)", "What-If Analysis"]
+    ["Project Overview", "Skill Extractor", "Job Galaxy (Clustering)", "Salary Predictor"]
 )
 
 st.sidebar.markdown("---")
@@ -77,11 +77,10 @@ if page == "Project Overview":
         Instead of relying on simple keyword matching, we utilize state-of-the-art Deep Learning models to truly understand the context of job postings.</p>
         
         <h4>How it Works:</h4>
-        <ul>
-            <li><b>Task A (Skill Extractor):</b> We use a fine-tuned JobBERT model to automatically read job descriptions and extract the required Hard Skills, Software Knowledge, and Certifications.</li>
-            <li><b>Task B (Job Galaxy):</b> We convert textual descriptions into mathematical vectors using Sentence-BERT, then cluster them using HDBSCAN to discover latent "Galaxies" of similar job roles in the market.</li>
-            <li><b>Task C (Salary Simulator):</b> We combine the NLP vectors with structured data (like Industry and Experience) into an XGBoost & LightGBM ensemble to predict the fair market salary of a job posting.</li>
-        </ul>
+        
+- **Task A (Skill Extractor):** We use a fine-tuned JobBERT model to automatically read job descriptions and extract the required Hard Skills, Software Knowledge, and Certifications.
+- **Task B (Job Galaxy):** We convert textual descriptions into mathematical vectors using Sentence-BERT, then cluster them using HDBSCAN to discover latent "Galaxies" of similar job roles in the market.
+- **Task C (Salary Simulator):** We combine the NLP vectors with structured data (like Industry and Experience) into an XGBoost & LightGBM ensemble to predict the fair market salary of a job posting.
     </div>
     """, unsafe_allow_html=True)
     
@@ -113,7 +112,8 @@ elif page == "Skill Extractor":
     """, unsafe_allow_html=True)
     
     st.markdown("### 🏆 Top Extracted Entities")
-    st.image("assets/logo.png", width='stretch')
+    img_ner = load_image('task_a_ner_top_entities.png')
+    if img_ner: st.image(img_ner, width='stretch')
         
     st.markdown("### 🥈 Silver Standard Verification")
     img_silver = load_image('eda_08_top_skills_silver.png')
@@ -146,7 +146,7 @@ elif page == "Job Galaxy (Clustering)":
     img_clus = load_image('cluster_01_hdbscan_sizes.png')
     if img_clus: st.image(img_clus, width='stretch')
 
-elif page == "What-If Analysis":
+elif page == "Salary Predictor":
     st.markdown("<h1>Task C: Salary Intelligence Simulator</h1>", unsafe_allow_html=True)
     
     st.markdown("""
