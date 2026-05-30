@@ -95,7 +95,7 @@ if page == "Project Overview":
     
     col_a, col_b = st.columns(2)
     with col_a:
-        img_roles = load_image('eda_04_top_roles.png')
+        img_roles = load_image('eda_04_top_titles.png')
         if img_roles: st.image(img_roles, caption="Top Job Roles in the Dataset", width='stretch')
     with col_b:
         img_sal = load_image('eda_05_salary_distribution.png')
@@ -143,7 +143,7 @@ elif page == "Job Galaxy (Clustering)":
         
     st.markdown("### 🔥 Skill Profile per Cluster (NER Fusion)")
     st.markdown("This heatmap combines the extracted skills from Task A with the clusters from Task B, revealing the technical DNA of each job galaxy.")
-    img_clus = load_image('cluster_01_sizes.png')
+    img_clus = load_image('cluster_01_hdbscan_sizes.png')
     if img_clus: st.image(img_clus, width='stretch')
 
 elif page == "What-If Analysis":
