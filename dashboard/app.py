@@ -75,14 +75,15 @@ if page == "Project Overview":
         <p>In the modern job market, raw job descriptions contain massive amounts of unstructured insights that are difficult to analyze at scale. 
         This project tackles that challenge by building a <b>Multi-Task Natural Language Processing (NLP) Pipeline</b>. 
         Instead of relying on simple keyword matching, we utilize state-of-the-art Deep Learning models to truly understand the context of job postings.</p>
-        
-        <h4>How it Works:</h4>
-        
-- **Task A (Skill Extractor):** We use a fine-tuned JobBERT model to automatically read job descriptions and extract the required Hard Skills, Software Knowledge, and Certifications.
-- **Task B (Job Galaxy):** We convert textual descriptions into mathematical vectors using Sentence-BERT, then cluster them using HDBSCAN to discover latent "Galaxies" of similar job roles in the market.
-- **Task C (Salary Simulator):** We combine the NLP vectors with structured data (like Industry and Experience) into an XGBoost & LightGBM ensemble to predict the fair market salary of a job posting.
     </div>
     """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    #### How it Works:
+    - **Task A (Skill Extractor):** We use a fine-tuned JobBERT model to automatically read job descriptions and extract the required Hard Skills, Software Knowledge, and Certifications.
+    - **Task B (Job Galaxy):** We convert textual descriptions into mathematical vectors using Sentence-BERT, then cluster them using HDBSCAN to discover latent "Galaxies" of similar job roles in the market.
+    - **Task C (Salary Simulator):** We combine the NLP vectors with structured data (like Industry and Experience) into an XGBoost & LightGBM ensemble to predict the fair market salary of a job posting.
+    """)
     
     col1, col2, col3 = st.columns(3)
     with col1: st.markdown("<div class='glass-card'><div class='metric-value'>10K+</div><div class='metric-label'>Job Postings</div></div>", unsafe_allow_html=True)
