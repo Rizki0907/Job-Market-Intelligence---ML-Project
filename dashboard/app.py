@@ -713,7 +713,7 @@ nav_html = '<div class="nav-wrapper"><div class="nav-logo"><div class="nav-dot">
 for item, icon in NAV_ITEMS.items():
     is_active = page == item
     active_cls = ' class="active"' if is_active else ''
-    nav_html += f'<a href="?page={PAGE_SLUGS[item]}"{active_cls}><i class="fa-solid {icon}" style="font-size:0.8rem;"></i> {item}</a>'
+    nav_html += f'<a href="?page={PAGE_SLUGS[item]}" target="_top"{active_cls}><i class="fa-solid {icon}" style="font-size:0.8rem;"></i> {item}</a>'
 nav_html += '</div><div class="nav-team">ML Project &bull; 2025/2026</div></div>'
 st.markdown(nav_html, unsafe_allow_html=True)
 
