@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 st.set_page_config(
     page_title="Job Market Intelligence",
-    page_icon="assets/favicon.ico",
+    page_icon="💼",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -1376,6 +1376,7 @@ elif page == "Job Galaxy":
 
     # Static cluster figures
     cluster_figures = [
+        ("cluster_06_skill_heatmap.png", "Skill Profile Heatmap per Cluster"),
         ("cluster_03_hdbscan_gmm_comparison.png", "HDBSCAN vs GMM Comparison"),
         ("cluster_07_comparison_metrics.png", "Clustering Quality Metrics"),
         ("cluster_02_gmm_bic.png", "GMM BIC / AIC Curve"),
@@ -1412,7 +1413,7 @@ elif page == "Salary Predictor":
     with col_m1:
         st.markdown('<div class="card"><div class="card-label">Base Models</div><div class="card-title">XGBoost + LightGBM</div></div>', unsafe_allow_html=True)
     with col_m2:
-        st.markdown('<div class="card"><div class="card-label">R2 Score</div><div class="card-title">0.65</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="card"><div class="card-label">R² Score</div><div class="card-title">0.66</div></div>', unsafe_allow_html=True)
     with col_m3:
         st.markdown('<div class="card"><div class="card-label">Feature Space</div><div class="card-title">SBERT + TF-IDF + Structured</div></div>', unsafe_allow_html=True)
     with col_m4:
@@ -1589,7 +1590,7 @@ elif page == "Salary Predictor":
                 <div class="card" style="text-align:center;">
                     <div class="card-label">Model Base Prediction</div>
                     <div style="font-family:var(--font-head); font-size:2.2rem; font-weight:800; color:var(--primary);">${original_pred:,.0f}</div>
-                    <div style="font-size:0.8rem; color:var(--muted); margin-top:4px;">Stacking ensemble output</div>
+                    <div style="font-size:0.8rem; color:var(--muted); margin-top:4px;">Stacking Ensemble (XGBoost + LightGBM)</div>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -1615,7 +1616,7 @@ elif page == "Salary Predictor":
                     int(row_data["seniority_encoded"])
                 )
                 new_edu = st.slider(
-                    "Education Level  (0 None to 4 PhD)",
+                    "Education Level  (0 = No Req.  to  4 = Master's/PhD)",
                     0, 4,
                     int(row_data["education_level"] if not pd.isna(row_data["education_level"]) else 0)
                 )
