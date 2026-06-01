@@ -2,7 +2,7 @@
 
 This repository contains the final project for the Machine Learning course (Even Semester 2025/2026). It implements a comprehensive Multi-Task Natural Language Processing (NLP) pipeline designed to extract insights, cluster roles, and predict salaries from raw job postings.
 
-🚀 **[Live Dashboard Deployment](https://rizki0907-job-market-intelligence---ml-proj-dashboardapp-rbjn6g.streamlit.app/)**
+🚀 **[Live Dashboard Deployment](https://rizki0907-job-market-intelligence---ml-proj-dashboardapp-rbjn6g.streamlit.app/~/+/?page=overview/)**
 
 ## Project Vision & Impact
 
