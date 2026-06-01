@@ -1283,7 +1283,7 @@ elif page == "Job Galaxy":
         with col_ctl1:
             selected_label = st.selectbox("Select Cluster to Explore", cluster_labels)
         with col_ctl2:
-            entity_type = st.selectbox("Entity Type", ["Skills", "Tools / Knowledge", "Certifications", "All"])
+            entity_type = st.selectbox("Entity Type", ["Skills", "Knowledge", "Certifications", "All"])
         with col_ctl3:
             top_n_dna = st.selectbox("Show Top N Entities", [5, 10, 15, 20], index=1)
 
@@ -1291,16 +1291,16 @@ elif page == "Job Galaxy":
         sel_cluster = clusters_data[sel_id]
 
         entity_map = {
-            "Skills":              ("top_skills", "#00D4FF"),
-            "Tools / Knowledge":   ("top_tools",  "#A78BFA"),
-            "Certifications":      ("top_certs",  "#F59E0B"),
+            "Skills":        ("top_skills", "#00D4FF"),
+            "Knowledge":     ("top_tools",  "#A78BFA"),
+            "Certifications":("top_certs",  "#F59E0B"),
         }
 
         if entity_type == "All":
             combined = []
-            for key, color in [("top_skills", "SKILL"), ("top_tools", "KNOWLEDGE"), ("top_certs", "CERT")]:
+            for key, lbl in [("top_skills", "SKILL"), ("top_tools", "KNOWLEDGE"), ("top_certs", "CERT")]:
                 for item in sel_cluster.get(key, [])[:top_n_dna]:
-                    combined.append({"entity": item[:60], "type": color, "rank": len(combined)+1})
+                    combined.append({"entity": item[:60], "type": lbl, "rank": len(combined)+1})
             dna_df = pd.DataFrame(combined)
             if not dna_df.empty:
                 fig_dna = px.bar(
