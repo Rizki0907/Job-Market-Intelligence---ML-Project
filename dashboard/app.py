@@ -24,6 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIGURES_DIR = os.path.join(BASE_DIR, "figures")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 DATA_DIR = os.path.join(BASE_DIR, "data", "processed")
+NER_DIR = os.path.join(BASE_DIR, "data", "ner")
 
 SKILL_LABELS = {
     "IT": "Information Technology", "SALE": "Sales", "MGMT": "Management",
@@ -38,7 +39,7 @@ SKILL_LABELS = {
     "WRT": "Writing", "SUPL": "Supply Chain", "SCI": "Science"
 }
 
-EDU_LABELS = {0: "No Requirement", 1: "High School", 2: "Bachelor", 3: "Master", 4: "PhD"}
+EDU_LABELS = {0: "No Requirement", 1: "High School", 2: "Associate / Some College", 3: "Bachelor's Degree", 4: "Master's / PhD"}
 SEN_LABELS = {-1: "Unknown", 0: "Intern", 1: "Entry", 2: "Associate", 3: "Senior", 4: "Lead/Manager", 5: "Director+"}
 SIZE_LABELS = {1: "1 to 10", 2: "11 to 50", 3: "51 to 200", 4: "201 to 500", 5: "501 to 1K", 6: "1K to 5K", 7: "5K plus"}
 
@@ -774,7 +775,7 @@ if page == "Overview":
             <div class="pipeline-icon pi-a"><i class="fa-solid fa-tag"></i></div>
             <div class="pipeline-label">Task A</div>
             <div class="pipeline-title">Skill Extractor</div>
-            <div class="pipeline-body">Fine-tuned JobBERT on 800 labeled sentences performs Named Entity Recognition to extract hard skills, software, and certifications from raw descriptions.</div>
+            <div class="pipeline-body">Fine-tuned JobBERT on 1,000 labeled sentences performs Named Entity Recognition to extract hard skills, software, and certifications from raw descriptions.</div>
         </div>
         <div class="pipeline-card pc-b">
             <div class="pipeline-num">B</div>
@@ -1150,7 +1151,7 @@ elif page == "Skill Extractor":
     with col_m1:
         st.markdown('<div class="card"><div class="card-label">Model</div><div class="card-title">JobBERT</div><div class="card-body">jjzha/jobbert-base-cased, fine-tuned on domain-specific job data.</div></div>', unsafe_allow_html=True)
     with col_m2:
-        st.markdown('<div class="card"><div class="card-label">Training Data</div><div class="card-title">800 Sentences</div><div class="card-body">Manually annotated sentences with BIO-tagged entities for NER training.</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="card"><div class="card-label">Training Data</div><div class="card-title">1,000 Sentences</div><div class="card-body">Manually annotated sentences with BIO-tagged entities for NER training.</div></div>', unsafe_allow_html=True)
     with col_m3:
         st.markdown('<div class="card"><div class="card-label">Pseudo-Labels</div><div class="card-title">10,000 Docs</div><div class="card-body">Model used to pseudo-label the full dataset, extracting entities at scale.</div></div>', unsafe_allow_html=True)
 
@@ -1246,13 +1247,139 @@ elif page == "Job Galaxy":
 
     st.markdown('<div style="height:16px;"></div>', unsafe_allow_html=True)
 
+    # --- SKILL DNA HEATMAP (NER + Cluster Fusion) ---
+    @st.cache_data
+    def load_cluster_ner():
+        import json
+        json_path = os.path.join(DATA_DIR, "cluster_profiles_hdbscan.json")
+        ner_path  = os.path.join(NER_DIR, "ner_results.parquet")
+        clusters, ner_df = None, None
+        if os.path.exists(json_path):
+            with open(json_path, "r", encoding="utf-8") as f:
+                clusters = json.load(f)
+        if os.path.exists(ner_path):
+            ner_df = pd.read_parquet(ner_path)
+        return clusters, ner_df
+
+    clusters_data, ner_df = load_cluster_ner()
+
+    if clusters_data:
+        st.markdown("""
+        <div class="section-header" style="margin-top:8px;">
+            <div class="section-title">Skill DNA per Cluster</div>
+            <div class="section-line"></div>
+            <div class="section-count">NER Fusion</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        cluster_ids = sorted(clusters_data.keys(), key=lambda x: int(x))
+        cluster_labels = [
+            f"Cluster {cid}: {clusters_data[cid]['top_titles'][0] if clusters_data[cid].get('top_titles') else 'Unknown'}"
+            for cid in cluster_ids
+        ]
+        cluster_label_map = dict(zip(cluster_labels, cluster_ids))
+
+        col_ctl1, col_ctl2, col_ctl3 = st.columns([3, 2, 2])
+        with col_ctl1:
+            selected_label = st.selectbox("Select Cluster to Explore", cluster_labels)
+        with col_ctl2:
+            entity_type = st.selectbox("Entity Type", ["Skills", "Tools / Knowledge", "Certifications", "All"])
+        with col_ctl3:
+            top_n_dna = st.selectbox("Show Top N Entities", [5, 10, 15, 20], index=1)
+
+        sel_id = cluster_label_map[selected_label]
+        sel_cluster = clusters_data[sel_id]
+
+        entity_map = {
+            "Skills":              ("top_skills", "#00D4FF"),
+            "Tools / Knowledge":   ("top_tools",  "#A78BFA"),
+            "Certifications":      ("top_certs",  "#F59E0B"),
+        }
+
+        if entity_type == "All":
+            combined = []
+            for key, color in [("top_skills", "SKILL"), ("top_tools", "KNOWLEDGE"), ("top_certs", "CERT")]:
+                for item in sel_cluster.get(key, [])[:top_n_dna]:
+                    combined.append({"entity": item[:60], "type": color, "rank": len(combined)+1})
+            dna_df = pd.DataFrame(combined)
+            if not dna_df.empty:
+                fig_dna = px.bar(
+                    dna_df, x="rank", y="entity", color="type", orientation="h",
+                    color_discrete_map={"SKILL": "#00D4FF", "KNOWLEDGE": "#A78BFA", "CERT": "#F59E0B"},
+                    height=max(300, len(dna_df) * 28)
+                )
+                fig_dna.update_traces(hovertemplate="<b>%{y}</b><extra></extra>")
+                fig_dna = plotly_cfg(fig_dna, max(300, len(dna_df) * 28))
+                fig_dna.update_layout(
+                    yaxis=dict(autorange="reversed", tickfont=dict(size=10)),
+                    xaxis_title="Rank", showlegend=True,
+                    legend=dict(orientation="h", y=1.08, title="")
+                )
+                st.markdown('<div class="card"><div class="card-label">All Entity Types</div>', unsafe_allow_html=True)
+                st.plotly_chart(fig_dna, width='stretch')
+                st.markdown("</div>", unsafe_allow_html=True)
+        else:
+            key, color = entity_map[entity_type]
+            items = sel_cluster.get(key, [])[:top_n_dna]
+            if items:
+                dna_df = pd.DataFrame({"entity": [s[:60] for s in items], "rank": list(range(1, len(items)+1))})
+                fig_dna = px.bar(
+                    dna_df, x="rank", y="entity", orientation="h",
+                    color_discrete_sequence=[color],
+                    height=max(260, len(items) * 30)
+                )
+                fig_dna.update_traces(hovertemplate="<b>%{y}</b><br>Rank: %{x}<extra></extra>")
+                fig_dna = plotly_cfg(fig_dna, max(260, len(items) * 30))
+                fig_dna.update_layout(yaxis=dict(autorange="reversed", tickfont=dict(size=10)), xaxis_title="Rank")
+                st.markdown(f'<div class="card"><div class="card-label">Top {top_n_dna} {entity_type} — {selected_label}</div>', unsafe_allow_html=True)
+                st.plotly_chart(fig_dna, width='stretch')
+                st.markdown("</div>", unsafe_allow_html=True)
+            else:
+                st.info(f"No {entity_type.lower()} data available for this cluster.")
+
+        # Cluster Overview Cards (top titles + size)
+        st.markdown("""
+        <div class="section-header" style="margin-top:32px;">
+            <div class="section-title">All Cluster Profiles</div>
+            <div class="section-line"></div>
+            <div class="section-count">{} Clusters</div>
+        </div>
+        """.format(len(cluster_ids)), unsafe_allow_html=True)
+
+        # Build summary bar chart: cluster sizes
+        size_data = pd.DataFrame([
+            {"cluster": f"C{cid}: {clusters_data[cid]['top_titles'][0][:25] if clusters_data[cid].get('top_titles') else '?'}",
+             "size": clusters_data[cid].get("size", 0)}
+            for cid in cluster_ids
+        ]).sort_values("size", ascending=False)
+
+        fig_sizes = px.bar(
+            size_data, x="size", y="cluster", orientation="h",
+            color="size",
+            color_continuous_scale=[[0, "#1E2D4A"], [0.5, "#7C3AED"], [1, "#00D4FF"]],
+        )
+        fig_sizes.update_traces(hovertemplate="<b>%{y}</b><br>Jobs: %{x:,}<extra></extra>")
+        fig_sizes = plotly_cfg(fig_sizes, max(400, len(cluster_ids) * 22))
+        fig_sizes.update_layout(
+            yaxis=dict(autorange="reversed"),
+            xaxis_title="Number of Job Postings",
+            coloraxis_showscale=False
+        )
+        st.markdown('<div class="card"><div class="card-label">Job Postings per Cluster (HDBSCAN)</div>', unsafe_allow_html=True)
+        st.plotly_chart(fig_sizes, width='stretch')
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    else:
+        st.info("Cluster profile data not found. Please ensure cluster_profiles_hdbscan.json is present in data/processed/.")
+
+    st.markdown('<div style="height:16px;"></div>', unsafe_allow_html=True)
+
+    # Static cluster figures
     cluster_figures = [
-        ("cluster_01_hdbscan_sizes.png", "Cluster Size Distribution"),
         ("cluster_03_hdbscan_gmm_comparison.png", "HDBSCAN vs GMM Comparison"),
-        ("cluster_05_gmm_confidence.png", "GMM Cluster Confidence"),
-        ("cluster_06_skill_heatmap.png", "Skill Profile Heatmap per Cluster"),
         ("cluster_07_comparison_metrics.png", "Clustering Quality Metrics"),
-        ("cluster_02_gmm_bic.png", "GMM BIC Curve"),
+        ("cluster_02_gmm_bic.png", "GMM BIC / AIC Curve"),
+        ("cluster_05_gmm_confidence.png", "GMM Cluster Confidence"),
     ]
     pairs = [(cluster_figures[i], cluster_figures[i+1] if i+1 < len(cluster_figures) else None) for i in range(0, len(cluster_figures), 2)]
     for pair in pairs:
