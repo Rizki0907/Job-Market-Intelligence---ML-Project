@@ -27,7 +27,7 @@ The data driving this project originates from the **[LinkedIn Job Postings Datas
 3. **Task C: Salary Intelligence Simulator**
    - Combines NLP vectors (SBERT and TF-IDF) with structured, categorical data (Industry, Experience, Seniority).
    - Utilizes advanced Target Encoding for high-cardinality categorical features.
-   - Uses an **XGBoost ensemble model** to predict the fair market annual salary of a job posting.
+   - Uses a **Stacking Ensemble of XGBoost and LightGBM** (meta-learner: RidgeCV) to predict the fair market annual salary of a job posting.
    - Features an interactive **"What-If" simulator** in the dashboard to instantly see how tweaking variables (e.g., adding years of experience or shifting to a remote role) affects the predicted compensation.
 
 ## Development Team
@@ -49,7 +49,7 @@ The data driving this project originates from the **[LinkedIn Job Postings Datas
 
 1. Install the required dependencies:
    ```bash
-   pip install streamlit pandas numpy joblib scikit-learn category-encoders xgboost lightgbm
+   pip install -r requirements.txt
    ```
 
 2. Navigate to the `dashboard` directory:
