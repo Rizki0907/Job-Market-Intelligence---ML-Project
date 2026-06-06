@@ -709,74 +709,21 @@ if isinstance(slug, list):
     slug = slug[0] if slug else "overview"
 page = SLUG_TO_PAGE.get(str(slug).lower(), "Overview")
 
-# --- Build nav links inside the component ---
-# target="_parent" navigates the Streamlit ~/+/ iframe directly.
-# The relative URL ?page=slug resolves to ~/+/?page=slug (base = parent URL).
-# This triggers Streamlit to rerun with the new query param — navigation works
-# from ANY entry point including the main / URL.
-_nav_links_html = ""
-for _item, _icon in NAV_ITEMS.items():
-    _active = ' class="active"' if page == _item else ''
-    _slug   = PAGE_SLUGS[_item]
-    _nav_links_html += (
-        f'<a href="?page={_slug}" target="_parent"{_active}>'
-        f'<i class="fa-solid {_icon}"></i> {_item}</a>'
+# target="_self" navigates the current Streamlit iframe (~/+/) — works from any URL.
+# This is the same approach used in the working GeoSosEkon data mining dashboard.
+nav_html = '<div class="nav-wrapper"><div class="nav-logo"><div class="nav-dot"></div><span>JOB</span> INTELLIGENCE</div><div class="nav-links">'
+for item, icon in NAV_ITEMS.items():
+    is_active = page == item
+    active_cls = ' class="active"' if is_active else ''
+    nav_html += (
+        f'<a href="?page={PAGE_SLUGS[item]}" target="_self"{active_cls}>'
+        f'<i class="fa-solid {icon}" style="font-size:0.8rem;"></i> {item}</a>'
     )
-
-# CSS: make the component iframe container sticky + invisible border
-st.markdown("""
-<style>
-[data-testid="stCustomComponentV1"] {
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 9999 !important;
-    margin-left: calc(-1 * var(--pad-x)) !important;
-    margin-right: calc(-1 * var(--pad-x)) !important;
-    width: calc(100% + 2 * var(--pad-x)) !important;
-    box-sizing: border-box !important;
-}
-[data-testid="stCustomComponentV1"] iframe {
-    border: none !important;
-    display: block !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
-components.html(f"""<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<style>
-*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
-html,body{{height:64px;overflow:hidden;background:rgba(8,11,20,0.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);}}
-body{{border-bottom:1px solid #1E2D4A;}}
-a{{text-decoration:none;}}
-.nw{{display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 56px;}}
-.nl{{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:.05em;color:#E2E8F0;display:flex;align-items:center;gap:10px;}}
-.nl span{{background:linear-gradient(90deg,#00D4FF,#7C3AED);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}}
-.dot{{width:8px;height:8px;border-radius:50%;background:#00D4FF;box-shadow:0 0 8px #00D4FF;animation:pd 2s ease-in-out infinite;flex-shrink:0;}}
-@keyframes pd{{0%,100%{{opacity:1;transform:scale(1)}}50%{{opacity:.5;transform:scale(.7)}}}}
-.links{{display:flex;gap:4px;align-items:center;}}
-.links a{{font-family:'Space Grotesk',sans-serif;font-size:.83rem;font-weight:500;border-radius:8px;transition:all .2s;display:flex;align-items:center;gap:7px;padding:8px 14px;color:#64748B;}}
-.links a:hover{{color:#00D4FF!important;background:rgba(0,212,255,.08);}}
-.links a.active{{color:#00D4FF;background:rgba(0,212,255,.08);}}
-.links a i{{font-size:.8rem;}}
-.team{{font-size:.72rem;color:#64748B;font-family:'DM Mono',monospace;white-space:nowrap;}}
-</style>
-</head>
-<body>
-<div class="nw">
-  <div class="nl"><div class="dot"></div><span>JOB</span>&nbsp;INTELLIGENCE</div>
-  <div class="links">{_nav_links_html}</div>
-  <div class="team">ML Project &bull; 2025/2026</div>
-</div>
-</body>
-</html>""", height=64, scrolling=False)
+nav_html += '</div><div class="nav-team">ML Project &bull; 2025/2026</div></div>'
+st.markdown(nav_html, unsafe_allow_html=True)
 
 st.markdown('<div class="page-wrapper">', unsafe_allow_html=True)
+
 
 
 
