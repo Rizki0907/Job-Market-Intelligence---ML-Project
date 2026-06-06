@@ -709,17 +709,51 @@ if isinstance(slug, list):
     slug = slug[0] if slug else "overview"
 page = SLUG_TO_PAGE.get(str(slug).lower(), "Overview")
 
+# Nav HTML — uses data-page attribute; click handled via JS bridge below
 nav_html = '<div class="nav-wrapper"><div class="nav-logo"><div class="nav-dot"></div><span>JOB</span> INTELLIGENCE</div><div class="nav-links">'
 for item, icon in NAV_ITEMS.items():
     is_active = page == item
     active_cls = ' class="active"' if is_active else ''
-    slug = PAGE_SLUGS[item]
+    nav_slug = PAGE_SLUGS[item]
     nav_html += (
-        f'<a href="#" onclick="event.preventDefault(); window.location.search=\'?page={slug}\';" {active_cls}>'
+        f'<a data-page="{nav_slug}" style="cursor:pointer;"{active_cls}>'
         f'<i class="fa-solid {icon}" style="font-size:0.8rem;"></i> {item}</a>'
     )
 nav_html += '</div><div class="nav-team">ML Project &bull; 2025/2026</div></div>'
 st.markdown(nav_html, unsafe_allow_html=True)
+
+# JS bridge: components.v1.html runs real JS, bypasses Streamlit CSP.
+# Accesses window.parent.document (same-origin on Streamlit Cloud) to attach
+# click listeners; navigates the Streamlit iframe via window.parent.location.href.
+components.html(
+    """<!doctype html><html><body style="margin:0;overflow:hidden;">
+<script>
+(function(){
+    var MAX=40, n=0;
+    function attach(){
+        n++;
+        try {
+            var pdoc  = window.parent.document;
+            var links = pdoc.querySelectorAll('.nav-links a[data-page]');
+            if (!links.length){ if(n<MAX) setTimeout(attach,100); return; }
+            links.forEach(function(a){
+                if(a._navBound) return;
+                a._navBound = true;
+                a.addEventListener('click', function(e){
+                    e.preventDefault(); e.stopPropagation();
+                    window.parent.location.href =
+                        window.parent.location.pathname + '?page=' + a.getAttribute('data-page');
+                });
+            });
+        } catch(err){
+            console.warn('[nav-bridge] parent access blocked:', err);
+        }
+    }
+    setTimeout(attach, 250);
+})();
+</script></body></html>""",
+    height=0, scrolling=False
+)
 
 st.markdown('<div class="page-wrapper">', unsafe_allow_html=True)
 
